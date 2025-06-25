@@ -1,15 +1,10 @@
 model Image {
-    id Int @id @default(autoincrement())
-    filename String
-    file String
-    uploaded_at DateTime @default(now())
+  id                   BigInt                  @id @default(autoincrement())
+  filename             String                  @db.VarChar(150)
+  file                 String                  @db.VarChar(100)
+  uploaded_at          DateTime                @db.DateTime(6)
+  album_images         post_app_album_images[]
+  post_app_post_images post_app_post_images[]
 
-    // post UserPost? @relation(fields: [userPostId], references: [id])
-    // userPostId Int?
-
-    // album Album? @relation(fields: [albumId], references: [id])
-    // albumId Int?
-
-    album_images post_app_album_images[]
-    PostImages post_app_post_image[]
+  @@map("post_app_image")
 }

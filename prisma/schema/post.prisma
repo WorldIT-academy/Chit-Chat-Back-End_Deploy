@@ -1,54 +1,57 @@
-model Post{
-    id Int @id @default(autoincrement())
-    title String
-    tags post_app_post_tag[]
-    content String
-    images post_app_post_image[]
-    views post_app_post_views[]
-    likes post_app_post_likes[]
-    author Profile @relation(fields: [author_id], references: [id])
-    author_id Int
-    link Link? @relation(fields: [linkId], references: [id])
-    linkId Int?
+model Post {
+  id                   BigInt                 @id @default(autoincrement())
+  title                String                 @db.VarChar(255)
+  content              String                 @db.LongText
+  author_id            BigInt
+  topic                String                 @db.VarChar(255)
+  post_app_link        Link[]
+  author               Profile                @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_post_author_id_4cf2f14d_fk_user_app_profile_id")
+  post_app_post_images post_app_post_images[]
+  likes                post_app_post_likes[]
+  post_app_post_tags   post_app_post_tags[]
+  views                post_app_post_views[]
+
+  @@index([author_id], map: "post_app_post_author_id_4cf2f14d_fk_user_app_profile_id")
+  @@map("post_app_post")
 }
 
 model Tags {
-    id Int @id @default(autoincrement())
-    name String @unique
-    posts post_app_post_tag[]
-    album_tags post_app_album_tags[]
+  id                 BigInt               @id @default(autoincrement())
+  name               String               @unique(map: "name") @db.VarChar(50)
+  post_app_album     Album[]
+  post_app_post_tags post_app_post_tags[]
+
+  @@map("post_app_tag")
 }
 
-model Link{
-    id Int @id @default(autoincrement())
-    url String
-    post Post[] @relation()
-}
-    
-model post_app_post_tag {
-    post_id Int
-    tag_id Int
-    post Post @relation(fields: [post_id], references: [id])
-    tag Tags @relation(fields: [tag_id], references: [id])
-    id Int @id @default(autoincrement())
+model Link {
+  id            BigInt @id @default(autoincrement())
+  url           String @db.VarChar(200)
+  post_id       BigInt
+  post_app_post Post   @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_link_post_id_fc5d7e2e_fk_post_app_post_id")
+
+  @@index([post_id], map: "post_app_link_post_id_fc5d7e2e_fk_post_app_post_id")
+  @@map("post_app_link")
 }
 
 model post_app_post_likes {
-    post_id Int
-    post Post @relation(fields: [post_id], references: [id])
-    id Int @id @default(autoincrement())
+  id               BigInt  @id @default(autoincrement())
+  post_id          BigInt
+  profile_id       BigInt
+  post             Post    @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_post_likes_post_id_6832916a_fk_post_app_post_id")
+  user_app_profile Profile @relation(fields: [profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_post_likes_profile_id_be0f76a4_fk_user_app_profile_id")
+
+  @@unique([post_id, profile_id], map: "post_app_post_likes_post_id_profile_id_3545bfa9_uniq")
+  @@index([profile_id], map: "post_app_post_likes_profile_id_be0f76a4_fk_user_app_profile_id")
 }
 
 model post_app_post_views {
-    post_id Int
-    post Post @relation(fields: [post_id], references: [id])
-    id Int @id @default(autoincrement())
-}
+  id               BigInt  @id @default(autoincrement())
+  post_id          BigInt
+  profile_id       BigInt
+  post             Post    @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_post_views_post_id_390fa3b5_fk_post_app_post_id")
+  user_app_profile Profile @relation(fields: [profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_post_views_profile_id_9a080786_fk_user_app_profile_id")
 
-model post_app_post_image {
-    post_id Int
-    image_id Int
-    post Post @relation(fields: [post_id], references: [id])
-    image Image @relation(fields: [image_id], references: [id])
-    id Int @id @default(autoincrement())
+  @@unique([post_id, profile_id], map: "post_app_post_views_post_id_profile_id_fb5adf39_uniq")
+  @@index([profile_id], map: "post_app_post_views_profile_id_9a080786_fk_user_app_profile_id")
 }

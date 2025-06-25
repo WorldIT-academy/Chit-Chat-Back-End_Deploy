@@ -1,9 +1,12 @@
 model Friendship {
-    id Int @id @default(autoincrement())
-    profile1 Profile @relation("friendshipFrom", fields: [profile1_id], references: [id]) 
-    profile2 Profile @relation("friendshipTo",fields: [profile2_id], references: [id])
-    profile1_id Int 
-    profile2_id Int 
-    accepted Boolean @default(false)
-    @@unique([profile1_id, profile2_id])
+  id          BigInt  @id @default(autoincrement())
+  accepted    Boolean
+  profile1_id BigInt
+  profile2_id BigInt
+  profile1    Profile @relation("friendshipFrom", fields: [profile1_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_app_friendship_profile1_id_9b85a45d_fk_user_app_profile_id")
+  profile2    Profile @relation("friendshipTo", fields: [profile2_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_app_friendship_profile2_id_530d5ef0_fk_user_app_profile_id")
+
+  @@index([profile1_id], map: "user_app_friendship_profile1_id_9b85a45d_fk_user_app_profile_id")
+  @@index([profile2_id], map: "user_app_friendship_profile2_id_530d5ef0_fk_user_app_profile_id")
+  @@map("user_app_friendship")
 }

@@ -1,29 +1,27 @@
 model Album {
-    id Int @id @default(autoincrement())
-    name String
-    // theme String?
-    // year String?
-    images post_app_album_images[]
-    created_at DateTime @default(now())
-    shown Boolean @default(false)
-    topic post_app_album_tags[]
-    author Profile @relation(fields: [author_id], references: [id])
-    author_id Int
+  id            BigInt                  @id @default(autoincrement())
+  name          String                  @db.VarChar(255)
+  created_at    DateTime                @db.DateTime(6)
+  preview_image String?                 @db.VarChar(100)
+  shown         Boolean
+  topic_id      BigInt
+  author_id     BigInt
+  author        Profile                 @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_album_author_id_caa87140_fk_user_app_profile_id")
+  post_app_tag  Tags                    @relation(fields: [topic_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_album_topic_id_97be9a8b_fk_post_app_tag_id")
+  images        post_app_album_images[]
+
+  @@index([author_id], map: "post_app_album_author_id_caa87140_fk_user_app_profile_id")
+  @@index([topic_id], map: "post_app_album_topic_id_97be9a8b_fk_post_app_tag_id")
+  @@map("post_app_album")
 }
 
 model post_app_album_images {
-    id Int @id @default(autoincrement())
-    album_id Int
-    image_id Int
-    album Album @relation(fields: [album_id], references: [id])
-    image Image @relation(fields: [image_id], references: [id])
-    // @@id([album_id, image_id])
-}
+  id       BigInt @id @default(autoincrement())
+  album_id BigInt
+  image_id BigInt
+  album    Album  @relation(fields: [album_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_album_images_album_id_e4a65934_fk_post_app_album_id")
+  image    Image  @relation(fields: [image_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_album_images_image_id_0e0fa881_fk_post_app_image_id")
 
-model post_app_album_tags { 
-    album_id Int
-    tag_id Int
-    album Album @relation(fields: [album_id], references: [id])
-    tag Tags @relation(fields: [tag_id], references: [id])
-    id Int @id @default(autoincrement())
+  @@unique([album_id, image_id], map: "post_app_album_images_album_id_image_id_b0db7dd5_uniq")
+  @@index([image_id], map: "post_app_album_images_image_id_0e0fa881_fk_post_app_image_id")
 }

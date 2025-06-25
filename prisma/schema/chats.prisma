@@ -1,29 +1,39 @@
 model ChatGroup {
-    id Int @id @default(autoincrement())
-    name String
-    is_personal_chat Boolean @default(false)
-    members chat_app_chatgroup_members[]
-    admin Profile @relation("administeredGroup", fields: [admin_id], references: [id])
-    admin_id Int
-    avatar String
-    chat_messages ChatMessage[]
+  id                         BigInt                       @id @default(autoincrement())
+  name                       String                       @db.VarChar(255)
+  is_personal_chat           Boolean
+  admin_id                   BigInt
+  avatar                     String?                      @db.VarChar(100)
+  admin                      Profile                      @relation("administeredGroup", fields: [admin_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_app_chatgroup_admin_id_0f503322_fk_user_app_profile_id")
+  chat_app_chatgroup_members chat_app_chatgroup_members[]
+  chat_app_chatmessage       ChatMessage[]
+
+  @@index([admin_id], map: "chat_app_chatgroup_admin_id_0f503322_fk_user_app_profile_id")
+  @@map("chat_app_chatgroup")
 }
 
 model ChatMessage {
-    id Int @id @default(autoincrement())
-    content String
-    sent_at DateTime @default(now())
-    author Profile @relation(fields: [author_id], references: [id])
-    author_id Int
-    chat_group ChatGroup @relation(fields: [chat_groupId], references: [id])
-    chat_groupId Int
-    attached_image String
+  id                 BigInt    @id @default(autoincrement())
+  content            String    @db.LongText
+  sent_at            DateTime  @db.DateTime(6)
+  author_id          BigInt
+  chat_group_id      BigInt
+  attached_image     String?   @db.VarChar(100)
+  author             Profile   @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_app_chatmessage_author_id_d86dfb00_fk_user_app_profile_id")
+  chat_app_chatgroup ChatGroup @relation(fields: [chat_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_app_chatmessage_chat_group_id_cb5c2937_fk_chat_app_")
+
+  @@index([author_id], map: "chat_app_chatmessage_author_id_d86dfb00_fk_user_app_profile_id")
+  @@index([chat_group_id], map: "chat_app_chatmessage_chat_group_id_cb5c2937_fk_chat_app_")
+  @@map("chat_app_chatmessage")
 }
 
 model chat_app_chatgroup_members {
-    chat_groupId Int
-    profile_id Int
-    chat_group ChatGroup @relation(fields: [chat_groupId], references: [id])
-    profile Profile @relation(fields: [profile_id], references: [id])
-    @@id([chat_groupId, profile_id])
+  id                 BigInt    @id @default(autoincrement())
+  chatgroup_id       BigInt
+  profile_id         BigInt
+  chat_app_chatgroup ChatGroup @relation(fields: [chatgroup_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_app_chatgroup_m_chatgroup_id_1fa0254f_fk_chat_app_")
+  profile            Profile   @relation(fields: [profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_app_chatgroup_m_profile_id_bf7e915c_fk_user_app_")
+
+  @@unique([chatgroup_id, profile_id], map: "chat_app_chatgroup_members_chatgroup_id_profile_id_9979eb06_uniq")
+  @@index([profile_id], map: "chat_app_chatgroup_m_profile_id_bf7e915c_fk_user_app_")
 }
