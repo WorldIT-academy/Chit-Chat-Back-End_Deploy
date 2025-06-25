@@ -3,11 +3,14 @@ import { IErrors, errors } from "../config/errorCodes"
 import { Prisma } from "../generated/prisma";
 import { CreateUser, UpdateUser } from "./types"
 
-async function findUserByEmail(email: string) {
+async function findUserByUsername(username: string) {
     try {
-        let user = await client.profile.findUnique({
+        let user = await client.auth_user.findUnique({
             where: {
-                email: email
+                username: username
+            },
+            include: {
+                user_app_profile: true
             }
         })
         return user;
@@ -45,14 +48,10 @@ async function getUserById(id: number) {
             },
             select: {
                 id: true,
-                name: true,
-                username: true,
-                surname: true,
+                auth_user: true,               
                 date_of_birth: true,
-                email: true,
-                password: true,
                 signature: true,
-                image: true,
+                avatar: true,
                 friendship_from: true,
                 friendship_to: true,
                 chat_messages: true,
@@ -95,14 +94,12 @@ async function updateUserById(data: UpdateUser, id: number) {
                 id: id,
             },
             data: {
-                name: updatedData.name,
-                username: updatedData.username,
-                surname: updatedData.surname,
+                auth_user: updatedData,
+                
                 date_of_birth: updatedData.date_of_birth,
-                email: updatedData.email,
-                password: updatedData.password,
+                
                 signature: updatedData.signature,
-                image: updatedData.image
+                avatar: updatedData.avatar
             },
         });
         return user;
@@ -146,7 +143,7 @@ async function getUsers() {
 }
 
 const userRepository = {
-    findUserByEmail: findUserByEmail,
+    findUserByUsername: findUserByUsername,
     createUser: createUser,
     getUserById: getUserById,
     updateUserById: updateUserById,

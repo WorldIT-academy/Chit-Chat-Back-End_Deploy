@@ -28,7 +28,7 @@ async function getUserById(id: number): Promise<IOkWithData<User> | IError> {
 
 async function login(email: string, password: string): Promise<IOkWithData<string> | IError> {
   try {
-    const user = await userRepository.findUserByEmail(email);
+    const user = await userRepository.findUserByUsername(email);
 
     if (!user) {
       return { status: "error", message: "User not found" };

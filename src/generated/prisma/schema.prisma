@@ -1,195 +1,325 @@
+model auth_group {
+  id                     Int                      @id @default(autoincrement())
+  name                   String                   @unique(map: "name") @db.VarChar(150)
+  auth_group_permissions auth_group_permissions[]
+  auth_user_groups       auth_user_groups[]
+}
+
+model auth_group_permissions {
+  id              BigInt          @id @default(autoincrement())
+  group_id        Int
+  permission_id   Int
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_group_permissio_permission_id_84c5c92e_fk_auth_perm")
+  auth_group      auth_group      @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_group_permissions_group_id_b120cbf9_fk_auth_group_id")
+
+  @@unique([group_id, permission_id], map: "auth_group_permissions_group_id_permission_id_0cd325b0_uniq")
+  @@index([permission_id], map: "auth_group_permissio_permission_id_84c5c92e_fk_auth_perm")
+}
+
+model auth_permission {
+  id                         Int                          @id @default(autoincrement())
+  name                       String                       @db.VarChar(255)
+  content_type_id            Int
+  codename                   String                       @db.VarChar(100)
+  auth_group_permissions     auth_group_permissions[]
+  django_content_type        django_content_type          @relation(fields: [content_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_permission_content_type_id_2f476e4b_fk_django_co")
+  auth_user_user_permissions auth_user_user_permissions[]
+
+  @@unique([content_type_id, codename], map: "auth_permission_content_type_id_codename_01ab375a_uniq")
+}
+
+model auth_user {
+  id                         Int                          @id @default(autoincrement())
+  password                   String                       @db.VarChar(128)
+  last_login                 DateTime?                    @db.DateTime(6)
+  is_superuser               Boolean
+  username                   String                       @unique(map: "username") @db.VarChar(150)
+  first_name                 String                       @db.VarChar(150)
+  last_name                  String                       @db.VarChar(150)
+  email                      String                       @db.VarChar(254)
+  is_staff                   Boolean
+  is_active                  Boolean
+  date_joined                DateTime                     @db.DateTime(6)
+  auth_user_groups           auth_user_groups[]
+  auth_user_user_permissions auth_user_user_permissions[]
+  django_admin_log           django_admin_log[]
+  user_app_profile           Profile?
+}
+
+model auth_user_groups {
+  id         BigInt     @id @default(autoincrement())
+  user_id    Int
+  group_id   Int
+  auth_group auth_group @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_user_groups_group_id_97559544_fk_auth_group_id")
+  auth_user  auth_user  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_user_groups_user_id_6a12ed8b_fk_auth_user_id")
+
+  @@unique([user_id, group_id], map: "auth_user_groups_user_id_group_id_94350c0c_uniq")
+  @@index([group_id], map: "auth_user_groups_group_id_97559544_fk_auth_group_id")
+}
+
+model auth_user_user_permissions {
+  id              BigInt          @id @default(autoincrement())
+  user_id         Int
+  permission_id   Int
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_user_user_permi_permission_id_1fbb5f2c_fk_auth_perm")
+  auth_user       auth_user       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_user_user_permissions_user_id_a95ead1b_fk_auth_user_id")
+
+  @@unique([user_id, permission_id], map: "auth_user_user_permissions_user_id_permission_id_14a6b632_uniq")
+  @@index([permission_id], map: "auth_user_user_permi_permission_id_1fbb5f2c_fk_auth_perm")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model django_admin_log {
+  id                  Int                  @id @default(autoincrement())
+  action_time         DateTime             @db.DateTime(6)
+  object_id           String?              @db.LongText
+  object_repr         String               @db.VarChar(200)
+  action_flag         Int                  @db.UnsignedSmallInt
+  change_message      String               @db.LongText
+  content_type_id     Int?
+  user_id             Int
+  django_content_type django_content_type? @relation(fields: [content_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "django_admin_log_content_type_id_c4bce8eb_fk_django_co")
+  auth_user           auth_user            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "django_admin_log_user_id_c564eba6_fk_auth_user_id")
+
+  @@index([content_type_id], map: "django_admin_log_content_type_id_c4bce8eb_fk_django_co")
+  @@index([user_id], map: "django_admin_log_user_id_c564eba6_fk_auth_user_id")
+}
+
+model django_content_type {
+  id               Int                @id @default(autoincrement())
+  app_label        String             @db.VarChar(100)
+  model            String             @db.VarChar(100)
+  auth_permission  auth_permission[]
+  django_admin_log django_admin_log[]
+
+  @@unique([app_label, model], map: "django_content_type_app_label_model_76bd3d3b_uniq")
+}
+
+model django_migrations {
+  id      BigInt   @id @default(autoincrement())
+  app     String   @db.VarChar(255)
+  name    String   @db.VarChar(255)
+  applied DateTime @db.DateTime(6)
+}
+
+model django_session {
+  session_key  String   @id @db.VarChar(40)
+  session_data String   @db.LongText
+  expire_date  DateTime @db.DateTime(6)
+
+  @@index([expire_date], map: "django_session_expire_date_a5c62663")
+}
+
+model post_app_post_images {
+  id             BigInt @id @default(autoincrement())
+  post_id        BigInt
+  image_id       BigInt
+  post_app_image Image  @relation(fields: [image_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_post_images_image_id_4c32a1d3_fk_post_app_image_id")
+  post_app_post  Post   @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_post_images_post_id_57de509f_fk_post_app_post_id")
+
+  @@unique([post_id, image_id], map: "post_app_post_images_post_id_image_id_66ada371_uniq")
+  @@index([image_id], map: "post_app_post_images_image_id_4c32a1d3_fk_post_app_image_id")
+}
+
+model post_app_post_tags {
+  id            BigInt @id @default(autoincrement())
+  post_id       BigInt
+  tag_id        BigInt
+  post_app_post Post   @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_post_tags_post_id_b72298ea_fk_post_app_post_id")
+  post_app_tag  Tags   @relation(fields: [tag_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_post_tags_tag_id_df0ee56c_fk_post_app_tag_id")
+
+  @@unique([post_id, tag_id], map: "post_app_post_tags_post_id_tag_id_f9d7c733_uniq")
+  @@index([tag_id], map: "post_app_post_tags_tag_id_df0ee56c_fk_post_app_tag_id")
+}
+
+model user_app_verificationcode {
+  id         BigInt   @id @default(autoincrement())
+  username   String   @db.VarChar(150)
+  code       String   @db.VarChar(255)
+  created_at DateTime @db.DateTime(6)
+}
+
 model Album {
-  id         Int                     @id @default(autoincrement())
-  name       String
-  // theme String?
-  // year String?
-  images     post_app_album_images[]
-  created_at DateTime                @default(now())
-  shown      Boolean                 @default(false)
-  topic      post_app_album_tags[]
-  author     Profile                 @relation(fields: [author_id], references: [id])
-  author_id  Int
+  id            BigInt                  @id @default(autoincrement())
+  name          String                  @db.VarChar(255)
+  created_at    DateTime                @db.DateTime(6)
+  preview_image String?                 @db.VarChar(100)
+  shown         Boolean
+  topic_id      BigInt
+  author_id     BigInt
+  author        Profile                 @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_album_author_id_caa87140_fk_user_app_profile_id")
+  post_app_tag  Tags                    @relation(fields: [topic_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_album_topic_id_97be9a8b_fk_post_app_tag_id")
+  images        post_app_album_images[]
+
+  @@index([author_id], map: "post_app_album_author_id_caa87140_fk_user_app_profile_id")
+  @@index([topic_id], map: "post_app_album_topic_id_97be9a8b_fk_post_app_tag_id")
+  @@map("post_app_album")
 }
 
 model post_app_album_images {
-  id       Int   @id @default(autoincrement())
-  album_id Int
-  image_id Int
-  album    Album @relation(fields: [album_id], references: [id])
-  image    Image @relation(fields: [image_id], references: [id])
-  // @@id([album_id, image_id])
-}
+  id       BigInt @id @default(autoincrement())
+  album_id BigInt
+  image_id BigInt
+  album    Album  @relation(fields: [album_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_album_images_album_id_e4a65934_fk_post_app_album_id")
+  image    Image  @relation(fields: [image_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_album_images_image_id_0e0fa881_fk_post_app_image_id")
 
-model post_app_album_tags {
-  album_id Int
-  tag_id   Int
-  album    Album @relation(fields: [album_id], references: [id])
-  tag      Tags  @relation(fields: [tag_id], references: [id])
-  id       Int   @id @default(autoincrement())
+  @@unique([album_id, image_id], map: "post_app_album_images_album_id_image_id_b0db7dd5_uniq")
+  @@index([image_id], map: "post_app_album_images_image_id_0e0fa881_fk_post_app_image_id")
 }
 
 model ChatGroup {
-  id               Int                          @id @default(autoincrement())
-  name             String
-  is_personal_chat Boolean                      @default(false)
-  members          chat_app_chatgroup_members[]
-  admin            Profile                      @relation("administeredGroup", fields: [admin_id], references: [id])
-  admin_id         Int
-  avatar           String
-  chat_messages    ChatMessage[]
+  id                         BigInt                       @id @default(autoincrement())
+  name                       String                       @db.VarChar(255)
+  is_personal_chat           Boolean
+  admin_id                   BigInt
+  avatar                     String?                      @db.VarChar(100)
+  admin                      Profile                      @relation("administeredGroup", fields: [admin_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_app_chatgroup_admin_id_0f503322_fk_user_app_profile_id")
+  chat_app_chatgroup_members chat_app_chatgroup_members[]
+  chat_app_chatmessage       ChatMessage[]
+
+  @@index([admin_id], map: "chat_app_chatgroup_admin_id_0f503322_fk_user_app_profile_id")
+  @@map("chat_app_chatgroup")
 }
 
 model ChatMessage {
-  id             Int       @id @default(autoincrement())
-  content        String
-  sent_at        DateTime  @default(now())
-  author         Profile   @relation(fields: [author_id], references: [id])
-  author_id      Int
-  chat_group     ChatGroup @relation(fields: [chat_groupId], references: [id])
-  chat_groupId   Int
-  attached_image String
+  id                 BigInt    @id @default(autoincrement())
+  content            String    @db.LongText
+  sent_at            DateTime  @db.DateTime(6)
+  author_id          BigInt
+  chat_group_id      BigInt
+  attached_image     String?   @db.VarChar(100)
+  author             Profile   @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_app_chatmessage_author_id_d86dfb00_fk_user_app_profile_id")
+  chat_app_chatgroup ChatGroup @relation(fields: [chat_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_app_chatmessage_chat_group_id_cb5c2937_fk_chat_app_")
+
+  @@index([author_id], map: "chat_app_chatmessage_author_id_d86dfb00_fk_user_app_profile_id")
+  @@index([chat_group_id], map: "chat_app_chatmessage_chat_group_id_cb5c2937_fk_chat_app_")
+  @@map("chat_app_chatmessage")
 }
 
 model chat_app_chatgroup_members {
-  chat_groupId Int
-  profile_id   Int
-  chat_group   ChatGroup @relation(fields: [chat_groupId], references: [id])
-  profile      Profile   @relation(fields: [profile_id], references: [id])
+  id                 BigInt    @id @default(autoincrement())
+  chatgroup_id       BigInt
+  profile_id         BigInt
+  chat_app_chatgroup ChatGroup @relation(fields: [chatgroup_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_app_chatgroup_m_chatgroup_id_1fa0254f_fk_chat_app_")
+  profile            Profile   @relation(fields: [profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "chat_app_chatgroup_m_profile_id_bf7e915c_fk_user_app_")
 
-  @@id([chat_groupId, profile_id])
+  @@unique([chatgroup_id, profile_id], map: "chat_app_chatgroup_members_chatgroup_id_profile_id_9979eb06_uniq")
+  @@index([profile_id], map: "chat_app_chatgroup_m_profile_id_bf7e915c_fk_user_app_")
 }
 
 model Friendship {
-  id          Int     @id @default(autoincrement())
-  profile1    Profile @relation("friendshipFrom", fields: [profile1_id], references: [id])
-  profile2    Profile @relation("friendshipTo", fields: [profile2_id], references: [id])
-  profile1_id Int
-  profile2_id Int
-  accepted    Boolean @default(false)
+  id          BigInt  @id @default(autoincrement())
+  accepted    Boolean
+  profile1_id BigInt
+  profile2_id BigInt
+  profile1    Profile @relation("friendshipFrom", fields: [profile1_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_app_friendship_profile1_id_9b85a45d_fk_user_app_profile_id")
+  profile2    Profile @relation("friendshipTo", fields: [profile2_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_app_friendship_profile2_id_530d5ef0_fk_user_app_profile_id")
 
-  @@unique([profile1_id, profile2_id])
+  @@index([profile1_id], map: "user_app_friendship_profile1_id_9b85a45d_fk_user_app_profile_id")
+  @@index([profile2_id], map: "user_app_friendship_profile2_id_530d5ef0_fk_user_app_profile_id")
+  @@map("user_app_friendship")
 }
 
 model Image {
-  id          Int      @id @default(autoincrement())
-  filename    String
-  file        String
-  uploaded_at DateTime @default(now())
+  id                   BigInt                  @id @default(autoincrement())
+  filename             String                  @db.VarChar(150)
+  file                 String                  @db.VarChar(100)
+  uploaded_at          DateTime                @db.DateTime(6)
+  album_images         post_app_album_images[]
+  post_app_post_images post_app_post_images[]
 
-  // post UserPost? @relation(fields: [userPostId], references: [id])
-  // userPostId Int?
-
-  // album Album? @relation(fields: [albumId], references: [id])
-  // albumId Int?
-
-  album_images post_app_album_images[]
-  PostImages   post_app_post_image[]
+  @@map("post_app_image")
 }
 
 model Post {
-  id        Int                   @id @default(autoincrement())
-  title     String
-  tags      post_app_post_tag[]
-  content   String
-  images    post_app_post_image[]
-  views     post_app_post_views[]
-  likes     post_app_post_likes[]
-  author    Profile               @relation(fields: [author_id], references: [id])
-  author_id Int
-  link      Link?                 @relation(fields: [linkId], references: [id])
-  linkId    Int?
+  id                   BigInt                 @id @default(autoincrement())
+  title                String                 @db.VarChar(255)
+  content              String                 @db.LongText
+  author_id            BigInt
+  topic                String                 @db.VarChar(255)
+  post_app_link        Link[]
+  author               Profile                @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_post_author_id_4cf2f14d_fk_user_app_profile_id")
+  post_app_post_images post_app_post_images[]
+  likes                post_app_post_likes[]
+  post_app_post_tags   post_app_post_tags[]
+  views                post_app_post_views[]
+
+  @@index([author_id], map: "post_app_post_author_id_4cf2f14d_fk_user_app_profile_id")
+  @@map("post_app_post")
 }
 
 model Tags {
-  id         Int                   @id @default(autoincrement())
-  name       String                @unique
-  posts      post_app_post_tag[]
-  album_tags post_app_album_tags[]
+  id                 BigInt               @id @default(autoincrement())
+  name               String               @unique(map: "name") @db.VarChar(50)
+  post_app_album     Album[]
+  post_app_post_tags post_app_post_tags[]
+
+  @@map("post_app_tag")
 }
 
 model Link {
-  id   Int    @id @default(autoincrement())
-  url  String
-  post Post[] @relation()
-}
+  id            BigInt @id @default(autoincrement())
+  url           String @db.VarChar(200)
+  post_id       BigInt
+  post_app_post Post   @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_link_post_id_fc5d7e2e_fk_post_app_post_id")
 
-model post_app_post_tag {
-  post_id Int
-  tag_id  Int
-  post    Post @relation(fields: [post_id], references: [id])
-  tag     Tags @relation(fields: [tag_id], references: [id])
-  id      Int  @id @default(autoincrement())
+  @@index([post_id], map: "post_app_link_post_id_fc5d7e2e_fk_post_app_post_id")
+  @@map("post_app_link")
 }
 
 model post_app_post_likes {
-  post_id Int
-  post    Post @relation(fields: [post_id], references: [id])
-  id      Int  @id @default(autoincrement())
+  id               BigInt  @id @default(autoincrement())
+  post_id          BigInt
+  profile_id       BigInt
+  post             Post    @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_post_likes_post_id_6832916a_fk_post_app_post_id")
+  user_app_profile Profile @relation(fields: [profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_post_likes_profile_id_be0f76a4_fk_user_app_profile_id")
+
+  @@unique([post_id, profile_id], map: "post_app_post_likes_post_id_profile_id_3545bfa9_uniq")
+  @@index([profile_id], map: "post_app_post_likes_profile_id_be0f76a4_fk_user_app_profile_id")
 }
 
 model post_app_post_views {
-  post_id Int
-  post    Post @relation(fields: [post_id], references: [id])
-  id      Int  @id @default(autoincrement())
-}
+  id               BigInt  @id @default(autoincrement())
+  post_id          BigInt
+  profile_id       BigInt
+  post             Post    @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_post_views_post_id_390fa3b5_fk_post_app_post_id")
+  user_app_profile Profile @relation(fields: [profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_app_post_views_profile_id_9a080786_fk_user_app_profile_id")
 
-model post_app_post_image {
-  post_id  Int
-  image_id Int
-  post     Post  @relation(fields: [post_id], references: [id])
-  image    Image @relation(fields: [image_id], references: [id])
-  id       Int   @id @default(autoincrement())
+  @@unique([post_id, profile_id], map: "post_app_post_views_post_id_profile_id_fb5adf39_uniq")
+  @@index([profile_id], map: "post_app_post_views_profile_id_9a080786_fk_user_app_profile_id")
 }
 
 model Profile {
-  id                  Int                          @id @default(autoincrement())
-  name                String?
-  username            String?                      @unique
-  surname             String?
-  date_of_birth       DateTime?
-  email               String                       @unique
-  password            String
-  image               String?
-  about               String?
-  signature           String?
-  post                Post[]
-  album               Album[]
+  id                  BigInt                       @id @default(autoincrement())
+  date_of_birth       DateTime                     @db.Date
+  user_id             Int                          @unique(map: "user_id")
+  signature           String?                      @db.VarChar(100)
   administered_groups ChatGroup[]                  @relation("administeredGroup")
+  chat_group_members  chat_app_chatgroup_members[]
   chat_messages       ChatMessage[]
-  avatar              Avatar?
+  album               Album[]
+  post                Post[]
+  post_app_post_likes post_app_post_likes[]
+  post_app_post_views post_app_post_views[]
+  avatar              Avatar[]
   friendship_from     Friendship[]                 @relation("friendshipFrom")
   friendship_to       Friendship[]                 @relation("friendshipTo")
-  // profile_views       ProfileViews[]
-  // profile_likes       ProfileLikes[]
-  chat_group_members  chat_app_chatgroup_members[]
+  auth_user           auth_user                    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_app_profile_user_id_ec83034b_fk_auth_user_id")
+
+  @@map("user_app_profile")
 }
 
 model Avatar {
-  id         Int     @id @default(autoincrement())
-  image      String
-  profile    Profile @relation(fields: [profile_id], references: [id])
-  profile_id Int     @unique
-  shown      Boolean @default(true)
-  active     Boolean @default(true)
+  id         BigInt  @id @default(autoincrement())
+  image      String  @db.VarChar(100)
+  active     Boolean
+  shown      Boolean
+  profile_id BigInt
+  profile    Profile @relation(fields: [profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_app_avatar_profile_id_126a14a3_fk_user_app_profile_id")
+
+  @@index([profile_id], map: "user_app_avatar_profile_id_126a14a3_fk_user_app_profile_id")
+  @@map("user_app_avatar")
 }
-
-// model ProfileViews {
-//     profile_id Int
-//     profile   user_app_profile @relation(fields: [profile_id], references: [id])
-//     @@id([profile_id])
-// }
-
-// model ProfileLikes {
-//     profile_id Int
-//     profile user_app_profile @relation(fields: [profile_id], references: [id])
-//     @@id([profile_id])
-// }
-
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client-js"
@@ -197,6 +327,6 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
