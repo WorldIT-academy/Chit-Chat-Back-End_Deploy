@@ -3,12 +3,30 @@ import postService from "./postService";
 import { saveBase64Image } from "../../utils/fileUtil";
 import { CreatePost, CreatePostBody } from "./types";
 
+function serializeBigInt(obj: any): any {
+    if (obj === null || obj === undefined) return obj;
+    if (typeof obj === "bigint") return obj.toString();
+    if (Array.isArray(obj)) return obj.map(serializeBigInt);
+    if (typeof obj === "object") {
+        const newObj: any = {};
+        for (const key in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                newObj[key] = serializeBigInt(obj[key]);
+            }
+        }
+        return newObj;
+    }
+    return obj;
+}
+
 async function getPosts(req: Request, res: Response) {
 	const result = await postService.getPosts();
 	if (result.status == "error") {
 		res.json("error");
 	} else {
-		res.json(result.data);
+		console.log(serializeBigInt(result.data[1].post_app_post_images))
+		res.json(serializeBigInt(result));
+		// res.json(result)
 	}
 }
 
@@ -38,7 +56,7 @@ async function createPost(req: Request<{}, {}, CreatePostBody>, res: Response) {
 		if (result.status == "error") {
 			res.json("error");
 		} else {
-			res.json(result.data);
+			res.json(serializeBigInt(result));
 		}
 
 	} catch (error) {
@@ -52,7 +70,7 @@ async function deletePost(req: Request, res: Response) {
 	if (result.status == "error") {
 		res.json("error");
 	} else {
-		res.json(result.data);
+		res.json(serializeBigInt(result));
 		console.log("Post deleted successfully");
 	}
 }
@@ -64,7 +82,7 @@ async function editPost(req: Request, res: Response) {
 	if (result.status == "error") {
 		res.json("error");
 	} else {
-		res.json(result);
+		res.json(serializeBigInt(result));
 	}
 }
 

@@ -15,6 +15,7 @@ import fs from "fs/promises";
 import path from "path";
 import prisma from "../client/prismaClient";
 import { Prisma, Tags } from "../generated/prisma";
+import { API_BASE_URL } from "..";
 
 async function getPosts(): Promise<IOkWithData<Post[]> | IError> {
 	const posts = await postRepository.getPosts();
@@ -109,7 +110,7 @@ async function createPost(
 							data: {
 								file: mapImage.url,
 								filename: mapImage.url,
-								uploaded_at: Date.now().toString(),
+								uploaded_at: new Date,
 							},
 						});
 					}
@@ -140,11 +141,6 @@ async function createPost(
 			post_app_post_images: imageInput,
 		};
 
-		console.log(
-			"Post data to be created:",
-			JSON.stringify(postData, null, 2)
-		);
-
 		// Створення поста
 		const newPost = await prisma.post.create({
 			data: postData,
@@ -172,11 +168,7 @@ async function editPost(
 	const createdImageUrls: string[] = [];
 
 	try {
-		const API_BASE_URL = "http://192.168.1.104:3000";
 		const uploadDir = path.join(__dirname, "..", "..", "public", "uploads");
-
-		console.log("[EditPost] Вхідні дані:", JSON.stringify(data, null, 2));
-
 		await fs.mkdir(uploadDir, { recursive: true });
 		console.log(`[EditPost] Директорія ${uploadDir} створена/існує`);
 
@@ -290,10 +282,6 @@ async function editPost(
 
 		// Обробка зображень
 		if (data.images) {
-			console.log(
-				"[EditPost] Обробка зображень:",
-				JSON.stringify(data.images, null, 2)
-			);
 			const allowedFormats = ["jpeg", "png", "gif"];
 			const maxSizeInBytes = 5 * 1024 * 1024; // 5 МБ
 
@@ -405,11 +393,7 @@ async function editPost(
 			};
 		}
 
-		// Оновлення поста
-		console.log(
-			"[EditPost] Дані для оновлення:",
-			JSON.stringify(updateData, null, 2)
-		);
+		// Оновлення поста;
 		const updatedPost = await prisma.post.update({
 			where: { id },
 			data: updateData,

@@ -12,6 +12,15 @@ export type User = Prisma.ProfileGetPayload<{
 		administered_groups: true;
 	};
 }>;
+export type AuthUser = Prisma.auth_userGetPayload<{
+	select:{
+		last_name: true, 
+		first_name: true,
+		username: true,
+		password: true,
+		email: true
+	}
+}>
 export interface IUpdateUser {
 	password: string;
 	username: string;
@@ -24,9 +33,19 @@ export interface IUpdateUser {
     }[]
 }
 
+export interface ICreateUser {
+	password: string;
+	username: string;
+	first_name: string;
+	last_name: string;
+	email: string;
+    
+}
+
 export type Avatar = Prisma.AvatarGetPayload<{}>
         
-export type CreateUser = Prisma.ProfileUncheckedCreateInput & IUpdateUser
+export type CreateUser = Prisma.ProfileUncheckedCreateInput 
+export type CreateUser1 = Prisma.ProfileCreateInput
 
 export type UpdateUser = Prisma.ProfileUncheckedUpdateInput & IUpdateUser;
 

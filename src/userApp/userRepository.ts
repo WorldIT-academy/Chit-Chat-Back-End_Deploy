@@ -1,7 +1,7 @@
 import client from "../client/prismaClient";
 import { IErrors, errors } from "../config/errorCodes";
 import { Prisma } from "../generated/prisma";
-import { CreateUser, UpdateUser } from "./types";
+import { CreateUser, CreateUser1, ICreateUser, UpdateUser } from "./types";
 
 async function findUserByUsername(username: string) {
 	try {
@@ -23,8 +23,10 @@ async function findUserByUsername(username: string) {
 		}
 	}
 }
-async function createUser(data: CreateUser) {
+
+async function createUser(data: CreateUser1) {
 	try {
+		console.log(data)
 		const user = await client.profile.create({
 			data: data,
 		});

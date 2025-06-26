@@ -4,10 +4,11 @@ import { hash, compare } from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import { SECRET_KEY } from "../config/token";
 import userRepository from "./userRepository";
-import { Avatar, CreateUser, IUpdateUser, UpdateUser, UpdateUserPromise, User } from "./types";
+import { Avatar, CreateUser, CreateUser1, ICreateUser, IUpdateUser, UpdateUser, UpdateUserPromise, User } from "./types";
 import nodemailer from 'nodemailer';
 import path from "path";
 import fs from "fs/promises";
+import { API_BASE_URL } from '..';
 
 const emailCodes = new Map<string, { code: string, expiresAt: number }>()
 
@@ -53,7 +54,7 @@ async function login(email: string, password: string): Promise<IOkWithData<strin
   }
 }
 
-async function registration(userData: CreateUser): Promise<IOkWithData<string> | IError> {
+async function registration(userData: ICreateUser): Promise<IOkWithData<string> | IError> {
   try {
 
     const user = await userRepository.findUserByUsername(userData.username);
@@ -68,20 +69,41 @@ async function registration(userData: CreateUser): Promise<IOkWithData<string> |
     //   password: hashedPassword,
     // };
 
-    const newData: CreateUser = {
-      ...userData,
-      avatar: [{image:"uploads/user.png"}]
+
+    const newData: CreateUser1 = {
+      date_of_birth: new Date,
+      auth_user: {
+        create: {
+          password: userData.password,
+          username: userData.username,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          email: userData.email,
+          is_active: true,
+          is_staff: false,
+          date_joined: new Date,
+          is_superuser: false
+        }
+
+      }
+      ,
+      // avatar: [{
+      //   image: "uploads/user.png",
+      //   active: true,
+      //   shown: true,
+      //   profile_id: userData.id,
+      //   id: userData.id
+      // }]
     }
 
     const newUser = await userRepository.createUser(newData);
-    console.log(newData)
-
 
     if (!newUser) {
       return { status: "error", message: "User is not created" };
     }
 
-    const token = sign({ id: newUser.id }, SECRET_KEY, { expiresIn: "1d" });
+
+    const token = sign({ id: newUser.id.toString() }, SECRET_KEY, { expiresIn: "1d" });
 
     return { status: "success", data: token };
 
@@ -92,6 +114,8 @@ async function registration(userData: CreateUser): Promise<IOkWithData<string> |
     return { status: "error", message: "An unknown error occurred" };
   }
 }
+
+
 
 async function sendEmail(email: string) {
 
@@ -167,13 +191,12 @@ function saveCode(email: string, code: string) {
 async function updateUserById(data: IUpdateUser, id: number): Promise<IOkWithData<User> | IError> {
   const createdImageFilename: string[] = [];
   try {
-    const API_BASE_URL = "http://192.168.1.104:3000";
     const uploadDir = path.join(__dirname, "..", "..", "public", "uploads");
 
     await fs.mkdir(uploadDir, { recursive: true });
 
     let updateData = { ...data };
- 
+
     // updateData.avatar?.connect
 
     if (updateData.avatar && Array.isArray(updateData.avatar)) {
