@@ -16,6 +16,8 @@ initSocketServer(httpServer)
 const PORT = 3000
 const HOST = '127.0.0.1'
 
+export const API_BASE_URL = "http://192.168.1.104:3000";
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 

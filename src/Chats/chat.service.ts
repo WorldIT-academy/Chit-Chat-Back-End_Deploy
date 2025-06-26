@@ -10,7 +10,7 @@ async function createChat(data: CreateChat): Promise<IOkWithData<CorrectChatForC
     const existingChat = await client.chatGroup.findFirst({
         where: { name: data.name },
         include: {
-            members: true
+            chat_app_chatgroup_members: true
         }
     })
 

@@ -24,7 +24,7 @@ async function getFriendship(req: Request, res: Response) {
 async function acceptFriendship(req: Request<{}, {}, AcceptedFriendshipBody>, res: Response) {
 	let data = req.body
 	const id = res.locals.userId
-	const where = { profile1_id: data.id, profile2_id: +id }
+	const where = { profile1_id: data.id, profile2_id: +id, id: undefined }
 	const result = await friendshipService.acceptFriendship(where);
 	if (result.status == "error") {
 		res.json("error");
@@ -41,8 +41,8 @@ async function deleteFriendship(
 	const { id: otherUserId } = req.body;
 
 	const pairs = [
-		{ profile1_id: otherUserId, profile2_id: userId },
-		{ profile1_id: userId, profile2_id: otherUserId },
+		{ profile1_id: otherUserId, profile2_id: userId, id: undefined},
+		{ profile1_id: userId, profile2_id: otherUserId, id: undefined },
 	];
 
 	for (const where of pairs) {

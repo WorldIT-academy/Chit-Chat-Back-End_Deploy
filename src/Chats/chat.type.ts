@@ -4,13 +4,13 @@ import { User } from "../userApp/types";
 
 export type Chat = Prisma.ChatGroupGetPayload<{
 	include:{
-		members: true,
-		chat_messages: true
+		chat_app_chatgroup_members: true,
+		chat_app_chatmessage: true
 	}
 }>;
 export type CorrectChatForCreate = Prisma.ChatGroupGetPayload<{
 	include:{
-		members: true,
+		chat_app_chatgroup_members: true,
 		admin: true
 	}
 }>;

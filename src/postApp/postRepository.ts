@@ -7,14 +7,14 @@ async function getPosts() {
         let post = await prisma.post.findMany(
             {
                 include: {
-                    images: {
+                    post_app_post_images: {
                         select: {
-                            image: true
+                            post_app_image: true
                         }
                     },
-                    tags: {
+                    post_app_post_tags: {
                         select: {
-                            tag: true
+                            post_app_tag: true
                         }
                     }
                 }
@@ -43,14 +43,14 @@ async function createPost(data: CreatePost) {
         let createPost = await prisma.post.create({
             data: data,
             include: {
-                images: {
+                post_app_post_images: {
                     select: {
-                        image: true
+                        post_app_image: true
                     }
                 },
-                tags: {
+                post_app_post_tags: {
                     select: {
-                        tag: true
+                        post_app_tag: true
                     }
                 }
             }
@@ -72,14 +72,14 @@ async function editPost(data: any, id: number) {
             where: { id },
             data,
             include: {
-                images: {
+                post_app_post_images: {
                     select: {
-                        image: true
+                        post_app_image: true
                     }
                 },
-                tags: {
+                post_app_post_tags: {
                     select: {
-                        tag: true
+                        post_app_tag: true
                     }
                 }
             }
@@ -95,14 +95,14 @@ async function deletePost(id: number) {
         const postToDelete = await prisma.post.findUnique({
             where: { id },
             include: {
-                images: {
+                post_app_post_images: {
                     include: {
-                        image: true
+                        post_app_image: true
                     }
                 },
-                tags: {
+                post_app_post_tags: {
                     include: {
-                        tag: true
+                        post_app_tag: true
                     }
                 }
             }
@@ -112,16 +112,16 @@ async function deletePost(id: number) {
             throw console.log("Post not found!")
         }
 
-        await prisma.post_app_post_image.deleteMany({
+        await prisma.post_app_post_images.deleteMany({
             where: { post_id: id }
         });
 
-        const imageIds = postToDelete.images.map((img) => img.image.id);
+        const imageIds = postToDelete.post_app_post_images.map((img) => img.image_id);
         await prisma.image.deleteMany({
             where: { id: { in: imageIds } }
         });
 
-        await prisma.post_app_post_tag.deleteMany({
+        await prisma.post_app_post_tags.deleteMany({
             where: { post_id: id }
         });
 

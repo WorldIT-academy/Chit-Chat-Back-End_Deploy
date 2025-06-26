@@ -39,7 +39,7 @@ function registerChat(socket: AuthenticatedSocket) {
     socket.on("sendMessage", async (data: MessagePayload) => {
 
         await chatService.saveMessage(data);
-        const room = `chat_${data.chat_groupId}`;
+        const room = `chat_${data.chat_group_id}`;
         io.to(room).emit("newMessage", data);
     });
 }

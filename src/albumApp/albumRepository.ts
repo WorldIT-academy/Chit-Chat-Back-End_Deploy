@@ -13,11 +13,7 @@ async function getAlbums() {
                             image: true
                         }
                     },
-                    topic: {
-                        select: {
-                            tag: true
-                        }
-                    }
+                    post_app_tag: true
                 }
             })
         return post
@@ -45,23 +41,11 @@ async function createAlbum(data: CreateAlbum) {
         let createAlbum = await prisma.album.create({
             data: data,
             include: {
-                topic: {
-                    select: {
-                        tag: true
-                    }
-                },
-                images: {
-                    select: {
-                        image: true
-                    }
-                }
+                post_app_tag: true,
             }
         })
         return createAlbum
     } catch (err) {
-        console.log("==================")
-        console.log(err)
-
         if (err instanceof Prisma.PrismaClientKnownRequestError) {
             if (err.code == 'P2002') {
                 console.log(err.message)
@@ -83,11 +67,7 @@ async function editAlbum(data: UpdateAlbum, id: number) {
                         image: true
                     }
                 },
-                topic: {
-                    select: {
-                        tag: true
-                    }
-                }
+                post_app_tag: true
             }
         });
     } catch (err) {
@@ -106,11 +86,7 @@ async function deleteAlbum(id: number) {
                         image: true
                     }
                 },
-                topic: {
-                    select: {
-                        tag: true
-                    }
-                }
+                post_app_tag: true
             }
         });
 
@@ -125,10 +101,6 @@ async function deleteAlbum(id: number) {
         const imageIds = deletedAlbum.images.map((img) => img.image.id);
         await prisma.image.deleteMany({
             where: { id: { in: imageIds } }
-        });
-
-        await prisma.post_app_album_tags.deleteMany({
-            where: { album_id: id }
         });
 
         await prisma.album.delete({

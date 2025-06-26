@@ -10,6 +10,7 @@ async function createFriendship(data: CreateFriendship) {
             data: {
                 profile1_id: data.profile1_id,
                 profile2_id: data.profile2_id,
+                accepted: false
             }
         })
         return friendship;

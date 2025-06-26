@@ -10,9 +10,9 @@ async function createChat(data: CreateChat) {
             is_personal_chat: data.is_personal_chat,
             avatar: data.avatar,
             admin_id: data.admin_id,
-            members: Array.isArray(data.members)
+            chat_app_chatgroup_members: Array.isArray(data.chat_app_chatgroup_members)
                 ? {
-                    create: data.members.map(member => ({
+                    create: data.chat_app_chatgroup_members.map(member => ({
                         profile_id: member.id
                     }))
                 }
@@ -22,7 +22,7 @@ async function createChat(data: CreateChat) {
         const chatGroup = await client.chatGroup.create({
             data: correctedData,
             include: {
-                members: true,
+                chat_app_chatgroup_members: true,
                 admin: true
             }
         });
@@ -46,8 +46,8 @@ async function getAllChats() {
     try {
         const chat = await client.chatGroup.findMany({
             include: {
-                chat_messages: true,
-                members: true,
+                chat_app_chatmessage: true,
+                chat_app_chatgroup_members: true,
                 admin: true,
             }
         })
@@ -67,8 +67,8 @@ async function getChat(where: WhereChat) {
         const chat = await client.chatGroup.findUniqueOrThrow({
             where: where,
             include: {
-                chat_messages: true,
-                members: true,
+                chat_app_chatmessage: true,
+                chat_app_chatgroup_members: true,
                 admin: true
 
             }

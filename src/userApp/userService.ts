@@ -1,9 +1,10 @@
+import { Image } from './../postApp/types';
 import { IError, IOkWithData } from "../types/types";
 import { hash, compare } from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import { SECRET_KEY } from "../config/token";
 import userRepository from "./userRepository";
-import { CreateUser, UpdateUser, User } from "./types";
+import { Avatar, CreateUser, IUpdateUser, UpdateUser, UpdateUserPromise, User } from "./types";
 import nodemailer from 'nodemailer';
 import path from "path";
 import fs from "fs/promises";
@@ -55,7 +56,7 @@ async function login(email: string, password: string): Promise<IOkWithData<strin
 async function registration(userData: CreateUser): Promise<IOkWithData<string> | IError> {
   try {
 
-    const user = await userRepository.findUserByEmail(userData.email);
+    const user = await userRepository.findUserByUsername(userData.username);
     if (user) {
       return { status: "error", message: "User already exists" };
     }
@@ -69,7 +70,7 @@ async function registration(userData: CreateUser): Promise<IOkWithData<string> |
 
     const newData: CreateUser = {
       ...userData,
-      image: "uploads/user.png"
+      avatar: [{image:"uploads/user.png"}]
     }
 
     const newUser = await userRepository.createUser(newData);
@@ -163,7 +164,7 @@ function saveCode(email: string, code: string) {
   emailCodes.set(normalizedEmail, { code, expiresAt });
 }
 
-async function updateUserById(data: UpdateUser, id: number): Promise<IOkWithData<UpdateUser> | IError> {
+async function updateUserById(data: IUpdateUser, id: number): Promise<IOkWithData<User> | IError> {
   const createdImageFilename: string[] = [];
   try {
     const API_BASE_URL = "http://192.168.1.104:3000";
@@ -172,37 +173,42 @@ async function updateUserById(data: UpdateUser, id: number): Promise<IOkWithData
     await fs.mkdir(uploadDir, { recursive: true });
 
     let updateData = { ...data };
+ 
+    // updateData.avatar?.connect
 
-    if (updateData.image && typeof updateData.image === "string" && updateData.image.startsWith("data:image")) {
-      const matches = updateData.image.match(/^data:image\/(\w+);base64,(.+)$/);
-      if (!matches) {
-        return { status: "error", message: "Невірний формат base64 зображення" };
-      }
+    if (updateData.avatar && Array.isArray(updateData.avatar)) {
+      for (const imageObj of updateData.avatar) {
+        if (typeof imageObj.image === "string" && imageObj.image.startsWith("data:image")) {
+          const matches = imageObj.image.match(/^data:image\/(\w+);base64,(.+)$/);
+          if (!matches) {
+            return { status: "error", message: "Невірний формат base64 зображення" };
+          }
 
-      const [, ext, base64Data] = matches;
-      const allowedFormats = ["jpeg", "png", "gif"];
-      const maxSizeInBytes = 5 * 1024 * 1024;
+          const [, ext, base64Data] = matches;
+          const allowedFormats = ["jpeg", "png", "gif"];
+          const maxSizeInBytes = 5 * 1024 * 1024;
 
-      if (!allowedFormats.includes(ext.toLowerCase())) {
-        return { status: "error", message: `Непідтримуваний формат зображення: ${ext}` };
-      }
+          if (!allowedFormats.includes(ext.toLowerCase())) {
+            return { status: "error", message: `Непідтримуваний формат зображення: ${ext}` };
+          }
 
-      const buffer = Buffer.from(base64Data, "base64");
-      if (buffer.length > maxSizeInBytes) {
-        return { status: "error", message: `Зображення занадто велике: максимум 5 MB` };
-      }
+          const buffer = Buffer.from(base64Data, "base64");
+          if (buffer.length > maxSizeInBytes) {
+            return { status: "error", message: `Зображення занадто велике: максимум 5 MB` };
+          }
 
-      const filename = `${Date.now()}-${Math.round(Math.random() * 1000000)}.${ext}`;
-      const filePath = path.join(uploadDir, filename);
+          const filename = `${Date.now()}-${Math.round(Math.random() * 1000000)}.${ext}`;
+          const filePath = path.join(uploadDir, filename);
 
-      await fs.writeFile(filePath, buffer);
+          await fs.writeFile(filePath, buffer);
 
-      try {
-        await fs.access(filePath);
-        updateData.image = `uploads/${filename}`;
-        createdImageFilename.push(filename);
-      } catch {
-        return { status: "error", message: "Не вдалося зберегти зображення" };
+          try {
+            await fs.access(filePath);
+            imageObj.image = `uploads/${filename}`;
+          } catch {
+            return { status: "error", message: "Не вдалося зберегти зображення" };
+          }
+        }
       }
     }
 
@@ -215,13 +221,21 @@ async function updateUserById(data: UpdateUser, id: number): Promise<IOkWithData
       return { status: "error", message: "User doesn't update" };
     }
 
-    if (user.image && !user.image.startsWith("http")) {
-      const relativeUrl = user.image.replace(/^uploads\/+/, "").replace(/\\/g, "/");
-      user.image = `${API_BASE_URL}/uploads/${relativeUrl}`;
+    if (user.avatar && !user.avatar.map((image) => image.image.startsWith("http"))) {
+      const relativeUrl = user.avatar.map((image) => image.image.replace(/^uploads\/+/, "").replace(/\\/g, "/"));
+      const correctImageuser: Avatar[] = []
+
+      user.avatar.forEach((image) => {
+        correctImageuser.push({
+          id: image.id,
+          image: `${API_BASE_URL}/uploads/${relativeUrl}`,
+          active: image.active,
+          shown: image.shown,
+          profile_id: image.profile_id
+        });
+      });
+      user.avatar = correctImageuser
     }
-    console.log("beeeeeeeeeeeee")
-    console.log(user)
-    console.log("beeeeeeeeeeeee")
 
     return { status: "success", data: user };
   } catch (err) {

@@ -9,5 +9,6 @@ export type AcceptedFriendshipBody = {
     id: number
 }
 
-export type AcceptedFriendshipWhere = Prisma.FriendshipProfile1_idProfile2_idCompoundUniqueInput
+// export type AcceptedFriendshipWhere = Prisma.FriendshipProfile1_idProfile2_idCompoundUniqueInput
+export type AcceptedFriendshipWhere = Prisma.FriendshipWhereUniqueInput
 
