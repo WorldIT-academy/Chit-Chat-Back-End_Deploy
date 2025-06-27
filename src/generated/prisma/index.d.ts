@@ -36556,7 +36556,7 @@ export namespace Prisma {
   }
 
   export type auth_userCreateNestedOneWithoutUser_app_profileInput = {
-    create?: XOR<auth_userCreateWithoutUser_app_profileInput, auth_userUncheckedCreateWithoutUser_app_profileInput>
+create?: XOR<auth_userCreateWithoutUser_app_profileInput, auth_userUncheckedCreateWithoutUser_app_profileInput>
     connectOrCreate?: auth_userCreateOrConnectWithoutUser_app_profileInput
     connect?: auth_userWhereUniqueInput
   }

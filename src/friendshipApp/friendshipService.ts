@@ -1,6 +1,6 @@
 import { IError, IOkWithData } from "../types/types";
 import friendshipRepository from "./friendshipRepository";
-import { AcceptedFriendshipWhere, CreateFriendship, IFriendship, WhereFriendship } from "./types";
+import { AcceptedFriendshipWhere, CreateFriendship, DeleteFriendshipWhere, IFriendship, WhereFriendship } from "./types";
 
 async function createFriendship(data: CreateFriendship): Promise<IOkWithData<CreateFriendship> | IError> {
 
@@ -20,7 +20,7 @@ async function getFriendship(): Promise<IOkWithData<IFriendship[]> | IError> {
 	return { status: "success", data: friendship };
 }
 
-async function acceptFriendship(where: AcceptedFriendshipWhere): Promise<IOkWithData<IFriendship> | IError> {
+async function acceptFriendship(where: AcceptedFriendshipWhere): Promise<IOkWithData<{count: number}> | IError> {
 	const updatedFriendship = await friendshipRepository.updateFriendship({ accepted: true }, where )
 	console.log(updatedFriendship)
 	if (!updatedFriendship) {
@@ -29,7 +29,7 @@ async function acceptFriendship(where: AcceptedFriendshipWhere): Promise<IOkWith
 	return { status: "success", data: updatedFriendship }
 }
 
-async function deleteFriendship(where: AcceptedFriendshipWhere): Promise<IOkWithData<IFriendship> | IError> {
+async function deleteFriendship(where: DeleteFriendshipWhere): Promise<IOkWithData<IFriendship> | IError> {
 	const deletedFriendship = await friendshipRepository.deleteFriendship(where)
 	console.log(deletedFriendship)
 	if (!deletedFriendship) {

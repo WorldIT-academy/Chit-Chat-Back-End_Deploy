@@ -24,7 +24,7 @@ async function getPosts(req: Request, res: Response) {
 	if (result.status == "error") {
 		res.json("error");
 	} else {
-		console.log(serializeBigInt(result.data[1].post_app_post_images))
+		// console.log(serializeBigInt(result.data[1].post_app_post_images))
 		res.json(serializeBigInt(result));
 		// res.json(result)
 	}

@@ -25,7 +25,8 @@ async function sendCode(req: Request, res: Response) {
 
 async function loginUser(req: Request, res: Response) {
     const data = req.body
-    const result = await userService.login(data.email, data.password)
+    console.log(data)
+    const result = await userService.login(data.username, data.password)
     res.json(serializeBigInt(result));
 }
 
@@ -50,7 +51,7 @@ async function registerUser(req: Request, res: Response) {
         return
     }
     const resultUser = await userService.registration(user)
-    console.log(resultUser)
+    // console.log(resultUser)
     res.json(serializeBigInt(resultUser))
 }
 
@@ -72,7 +73,7 @@ async function getUsers(req: Request, res: Response) {
         res.send('error')
     }
     else {
-        console.log(context.data)
+        // console.log(context.data)
         res.json(serializeBigInt(context.data))
     }
 }

@@ -4,7 +4,9 @@ import { Prisma } from "../generated/prisma";
 import { CreateUser, CreateUser1, ICreateUser, UpdateUser } from "./types";
 
 async function findUserByUsername(username: string) {
+	
 	try {
+	
 		let user = await client.auth_user.findUnique({
 			where: {
 				username: username,
@@ -26,7 +28,7 @@ async function findUserByUsername(username: string) {
 
 async function createUser(data: CreateUser1) {
 	try {
-		console.log(data)
+		// console.log(data)
 		const user = await client.profile.create({
 			data: data,
 		});
@@ -40,6 +42,7 @@ async function createUser(data: CreateUser1) {
 		}
 	}
 }
+
 
 async function getUserById(id: number) {
 	try {

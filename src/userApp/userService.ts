@@ -28,10 +28,11 @@ async function getUserById(id: number): Promise<IOkWithData<User> | IError> {
   }
 }
 
-async function login(email: string, password: string): Promise<IOkWithData<string> | IError> {
+async function login(username: string, password: string): Promise<IOkWithData<string> | IError> {
+  
   try {
-    const user = await userRepository.findUserByUsername(email);
-
+    const user = await userRepository.findUserByUsername(username);
+    
     if (!user) {
       return { status: "error", message: "User not found" };
     }
@@ -41,10 +42,10 @@ async function login(email: string, password: string): Promise<IOkWithData<strin
     if (password !== user.password) {
       return { status: "error", message: "Passwords didn`t match" };
     }
-
-
-    const token = sign({ id: user.id }, SECRET_KEY, { expiresIn: "7d" });
-
+  
+    console.log(user)
+    const token = sign({ id: user.user_app_profile?.id.toString() }, SECRET_KEY, { expiresIn: "7d" });
+    
     return { status: "success", data: token };
   } catch (err) {
     if (err instanceof Error) {
@@ -84,16 +85,14 @@ async function registration(userData: ICreateUser): Promise<IOkWithData<string> 
           date_joined: new Date,
           is_superuser: false
         }
-
+      },
+      avatar: {
+        create: {
+          image: "uploads/user.png",
+          active: true,
+          shown: true,
+        }
       }
-      ,
-      // avatar: [{
-      //   image: "uploads/user.png",
-      //   active: true,
-      //   shown: true,
-      //   profile_id: userData.id,
-      //   id: userData.id
-      // }]
     }
 
     const newUser = await userRepository.createUser(newData);

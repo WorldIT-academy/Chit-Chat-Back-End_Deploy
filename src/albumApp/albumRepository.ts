@@ -36,12 +36,12 @@ async function getAlbums() {
 }
 
 async function createAlbum(data: CreateAlbum) {
-    console.log(data)
     try {
         let createAlbum = await prisma.album.create({
             data: data,
             include: {
                 post_app_tag: true,
+                images: true
             }
         })
         return createAlbum

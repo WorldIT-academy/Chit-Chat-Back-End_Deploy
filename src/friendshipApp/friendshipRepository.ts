@@ -1,11 +1,11 @@
 import { Prisma } from "../generated/prisma";
 import client from "../client/prismaClient";
 import { errors, IErrors } from "../config/errorCodes";
-import { CreateFriendship, UpdateFriendship, WhereFriendship } from "./types";
+import { CreateFriendship, UpdateFriendship, WhereFriendship, DeleteFriendship } from "./types";
 
 async function createFriendship(data: CreateFriendship) {
     try {
-        console.log(data)
+        
         const friendship = await client.friendship.create({
             data: {
                 profile1_id: data.profile1_id,
@@ -13,6 +13,7 @@ async function createFriendship(data: CreateFriendship) {
                 accepted: false
             }
         })
+        console.log(friendship)
         return friendship;
     } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -50,7 +51,7 @@ async function getFriendship() {
 
 async function updateFriendship(data: UpdateFriendship, where: WhereFriendship) {
     try {
-        return await client.friendship.update({
+        return await client.friendship.updateMany({
             where: where,
             data,
         });
@@ -59,7 +60,7 @@ async function updateFriendship(data: UpdateFriendship, where: WhereFriendship) 
         throw err;
     }
 }
-async function deleteFriendship(where: WhereFriendship) {
+async function deleteFriendship(where: DeleteFriendship) {
     try {
         // Перевіряємо, чи існує запис дружби
         const friendToDelete = await client.friendship.findUnique({

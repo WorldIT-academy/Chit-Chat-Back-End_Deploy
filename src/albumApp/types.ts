@@ -15,6 +15,7 @@ export type Album = Prisma.AlbumGetPayload<{
 export type AlbumCorrect = Prisma.AlbumGetPayload<{
 	include: {
 		post_app_tag: true;
+		images: true,
 	};
 }>;
 
@@ -23,7 +24,7 @@ export type CreateAlbum = Prisma.AlbumUncheckedCreateInput
 export type UpdateAlbum = Prisma.AlbumUncheckedUpdateInput;
 
 // export type CreateAlbumData = Prisma.AlbumImagesUncheckedCreateNestedManyWithoutAlbumInput;
-export type CreateAlbumData = Prisma.post_app_album_imagesUncheckedCreateNestedManyWithoutAlbumInput;
+// export type CreateAlbumData = Prisma.post_app_album_imagesCreateNestedManyWithoutAlbumInput;
 
 export type AlbumUpdateBody = {
 	name?: string;
@@ -46,5 +47,10 @@ export type CreateAlbumBody = {
 	name: string;
 	topic: string;
 	author_id: bigint;
-	images?: undefined;
+	images?: {
+		image: {
+			id?: bigint;
+			filename: string;
+		};
+	}[];
 };
