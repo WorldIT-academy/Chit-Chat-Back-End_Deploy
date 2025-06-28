@@ -26,117 +26,106 @@ async function getAlbums(): Promise<IOkWithData<Album[]> | IError> {
 async function createAlbum(
 	data: CreateAlbumBody
 ): Promise<IOkWithData<AlbumCorrect> | IError> {
-	let topicId: bigint;
-	const createdImageUrls: string[] = [];
-
-	if (data.topic.length > 50) {
-		return {
-			status: "error",
-			message: "Тег має бути рядком не довшим за 50 символів",
-		};
-	}
-	let tag = await prisma.tags.findFirst({ where: { name: data.topic } });
-	if (!tag) {
-		tag = await prisma.tags.create({ data: { name: data.topic } });
-	}
-	topicId = tag.id;
-	let correctImages = {}
-	if (data.images) {
-		const allowedFormats = ["jpeg", "png", "gif"];
-		const maxSizeInBytes = 5 * 1024 * 1024; // 5 МБ
+	try {
+		let topicId: bigint;
+		const createdImageUrls: string[] = [];
 		const uploadDir = path.join(__dirname, "..", "..", "public", "uploads");
 
-		const createImages: { url: string }[] = [];
 		
-		for (const image of data.images) {
-			try {
-				if (!image.image.filename) {
+
+		// Пошук або створення тегу
+		let tag = await prisma.tags.findFirst({ where: { name: data.topic } });
+		if (!tag) {
+			tag = await prisma.tags.create({ data: { name: data.topic } });
+		}
+		topicId = tag.id;
+
+		// Обробка зображень
+		let correctImages = {};
+		if (data.images) {
+			const allowedFormats = ["jpeg", "png", "gif"];
+			const maxSizeInBytes = 5 * 1024 * 1024; // 5 МБ
+			const uploadDir = path.join(__dirname, "..", "..", "public", "uploads");
+
+			const createImages: { url: string }[] = [];
+
+			for (const image of data.images) {
+				try {
+					if (!image.image.filename) continue;
+
+					if (image.image.filename.startsWith("data:image")) {
+						const matches = image.image.filename.match(
+							/^data:image\/(\w+);base64,(.+)$/
+						);
+						if (!matches) continue;
+
+						const [, ext, base64Data] = matches;
+						if (!allowedFormats.includes(ext.toLowerCase())) continue;
+
+						const buffer = Buffer.from(base64Data, "base64");
+						if (buffer.length > maxSizeInBytes) continue;
+
+						const filename = `${Date.now()}-${Math.round(
+							Math.random() * 1000000
+						)}.${ext}`;
+						const filePath = path.join(uploadDir, filename);
+
+						await fs.writeFile(filePath, buffer);
+						createdImageUrls.push(filename);
+						createImages.push({ url: `uploads/${filename}` });
+					} else {
+						createImages.push({ url: image.image.filename });
+					}
+				} catch (error) {
+					console.error("Помилка обробки зображення:", error);
 					continue;
 				}
-				if (image.image.filename.startsWith("data:image")) {
-					const matches = image.image.filename.match(
-						/^data:image\/(\w+);base64,(.+)$/
-					);
-					if (!matches) {
-						console.error("[EditPost] Невірний формат base64");
-						continue;
-					}
-
-					const [, ext, base64Data] = matches;
-					if (!allowedFormats.includes(ext.toLowerCase())) {
-						console.error(
-							"[EditPost] Непідтримуваний формат зображення:",
-							ext
-						);
-						continue;
-					}
-
-					const buffer = Buffer.from(base64Data, "base64");
-					if (buffer.length > maxSizeInBytes) {
-						console.error(
-							"[EditPost] Зображення занадто велике:",
-							buffer.length
-						);
-						continue;
-					}
-
-					const filename = `${Date.now()}-${Math.round(
-						Math.random() * 1000000
-					)}.${ext}`;
-					const filePath = path.join(uploadDir, filename);
-
-					await fs.writeFile(filePath, buffer);
-					console.log(
-						"[EditPost] Зображення збережено:",
-						filePath
-					);
-
-					await fs.access(filePath);
-					createdImageUrls.push(filename);
-
-					createImages.push({ url: `uploads/${filename}` });
-				} else {
-					console.log(222);
-					createImages.push({ url: image.image.filename });
-				}
-			} catch (error) {
-				console.error(
-					"[EditPost] Помилка обробки зображення:",
-					error
-				);
-				continue;
 			}
-		}
-		correctImages = {
-			create: createImages.map((img) => ({
-				image: {
-					create: {
-						filename: img.url,
-						file: img.url,
-						uploaded_at: Date.now().toString()
+
+			correctImages = {
+				create: createImages.map((img) => ({
+					image: {
+						create: {
+							filename: img.url,
+							file: img.url,
+							uploaded_at: new Date
+						},
 					},
-				},
-			})),
+				})),
+			};
+		}
+
+		// Підготовка даних для альбому
+		const albumData = {
+			name: data.name,
+			topic_id: topicId,
+			author_id: BigInt(data.author_id),
+			created_at: new Date(),
+			shown: true,
+			images: correctImages
 		};
+
+		const result = await albumRepository.createAlbum(albumData);
+
+		if (!result) {
+			// Видалення завантажених зображень у разі помилки
+			for (const url of createdImageUrls) {
+				try {
+					await fs.unlink(path.join(uploadDir, url));
+				} catch (error) {
+					console.error("Помилка при видаленні зображення:", error);
+				}
+			}
+			return { status: "error", message: "Альбом не було створено" };
+		}
+
+		return { status: "success", data: result };
+
+	} catch (error) {
+		console.error("Помилка при створенні альбому:", error);
+		return { status: "error", message: "Внутрішня помилка сервера" };
 	}
-
-	const albumData: CreateAlbum = {
-		name: data.name,
-		topic_id: topicId,
-		author_id: data.author_id,
-		created_at: Date.now().toString(),
-		shown: true,
-		images: correctImages
-	};
-
-	const result = await albumRepository.createAlbum(albumData);
-
-	if (!result) {
-		return { status: "error", message: "Альбом не було створено" };
-	}
-	return { status: "success", data: result };
 }
-
 export async function editAlbum(
 	data: AlbumUpdateBody,
 	id: number
@@ -307,7 +296,7 @@ export async function editAlbum(
 						create: {
 							filename: img.url,
 							file: img.url,
-							uploaded_at: Date.now().toString()
+							uploaded_at: new Date
 						},
 					},
 				})),

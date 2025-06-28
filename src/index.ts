@@ -14,9 +14,9 @@ const httpServer = createServer(app)
 initSocketServer(httpServer)
 
 const PORT = 3000
-const HOST = '127.0.0.1'
+const HOST = '192.168.0.116'
 
-export const API_BASE_URL = "http://127.0.0.1:3000";
+export const API_BASE_URL = "http://192.168.0.116:3000";
 
 
 

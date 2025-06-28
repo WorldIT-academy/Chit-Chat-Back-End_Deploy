@@ -20,6 +20,7 @@ function serializeBigInt(obj: any): any {
 
 async function getChats(req: Request, res: Response, next: NextFunction) {
     const chat = await chatService.getChats()
+
     res.json(serializeBigInt(chat))
 }
 

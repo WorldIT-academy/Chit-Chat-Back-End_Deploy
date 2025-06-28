@@ -25,17 +25,17 @@ function serializeBigInt(obj: any): any {
 
 
 function leaveChat(socket: AuthenticatedSocket, data: ILeaveChatPayload) {
-    const chatRoomName = `chat_${data.chatId}`;
-    serializeBigInt(socket.leave(chatRoomName));
+    const chatRoomName = `chat_${serializeBigInt(data).chatId}`;
+    socket.leave(chatRoomName)
 }
 
 async function joinChat(socket: AuthenticatedSocket, data: IJoinChatPayload, callback: IJoinChatCallback) {
     const chatRoomName = `chat_${data.chatId}`;
     socket.join(chatRoomName);
-    const result = await chatService.joinChat(data.chatId);
+    const result = await chatService.joinChat(serializeBigInt(data).chatId);
     if (result.status === "success") {
         if (typeof callback === "function") {
-            callback({ status: "success", data: result.data });
+            callback({ status: "success", data: serializeBigInt(result.data) });
         }
     }
 }
@@ -46,18 +46,18 @@ function updateChat(socket: AuthenticatedSocket, data: IChatUpdatePayload) {
 
 function registerChat(socket: AuthenticatedSocket) {
     socket.on("joinChat", (data, callback) => {
-        joinChat(socket, data, callback);
+        joinChat(socket, serializeBigInt(data), callback);
     });
 
     socket.on("leaveChat", (data) => {
-        leaveChat(socket, data);
+        leaveChat(socket, serializeBigInt(data));
     });
 
     socket.on("sendMessage", async (data: MessagePayload) => {
 
-        await chatService.saveMessage(data);
-        const room = `chat_${data.chat_group_id}`;
-        io.to(room).emit("newMessage", data);
+        await chatService.saveMessage(serializeBigInt(data));
+        const room = `chat_${serializeBigInt(data).chat_group_id}`;
+        io.to(room).emit("newMessage", serializeBigInt(data));
     });
 }
 

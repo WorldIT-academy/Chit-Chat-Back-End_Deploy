@@ -37,6 +37,7 @@ async function getAlbums() {
 
 async function createAlbum(data: CreateAlbum) {
     try {
+        console.log(data)
         let createAlbum = await prisma.album.create({
             data: data,
             include: {
@@ -44,6 +45,7 @@ async function createAlbum(data: CreateAlbum) {
                 images: true
             }
         })
+        
         return createAlbum
     } catch (err) {
         if (err instanceof Prisma.PrismaClientKnownRequestError) {
@@ -52,6 +54,7 @@ async function createAlbum(data: CreateAlbum) {
                 throw err
             }
         }
+        console.log(err)
     }
 }
 

@@ -420,7 +420,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/worldit.academy/Desktop/Python/chiChatBack/Chit-Chat-Back-End/src/generated/prisma",
+      "value": "/Users/bogdanrubanov/Desktop/diplom/newBack/Chit-Chat-Back-End_Deploy/src/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -434,12 +434,11 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/worldit.academy/Desktop/Python/chiChatBack/Chit-Chat-Back-End/prisma/schema.prisma",
+    "sourceFilePath": "/Users/bogdanrubanov/Desktop/diplom/newBack/Chit-Chat-Back-End_Deploy/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null,
-    "schemaEnvPath": "../../../.env"
+    "rootEnvPath": null
   },
   "relativePath": "../../../prisma",
   "clientVersion": "6.7.0",
@@ -448,7 +447,7 @@ const config = {
     "db"
   ],
   "activeProvider": "mysql",
-  "postinstall": false,
+  "postinstall": true,
   "inlineDatasources": {
     "db": {
       "url": {

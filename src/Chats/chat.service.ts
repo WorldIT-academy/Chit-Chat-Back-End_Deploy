@@ -49,6 +49,7 @@ async function joinChat(id: number): Promise<IOkWithData<Chat> | IError> {
 }
 
 async function saveMessage(data: MessagePayload) {
+    console.log(data)
   try {
     await client.chatMessage.create({
       data: data,

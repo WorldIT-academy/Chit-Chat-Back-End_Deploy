@@ -4,6 +4,7 @@ import { CreateChat, WhereChat } from "./chat.type";
 import { errors, IErrors } from "../config/errorCodes";
 
 async function createChat(data: CreateChat) {
+    
     try {
         const correctedData = {
             name: data.name,
